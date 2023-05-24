@@ -1,0 +1,434 @@
+{
+	"info": {
+		"_postman_id": "4fc62678-1ce9-497c-9575-73ff29225f27",
+		"name": "php-rest-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get_all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9a99b819-54a4-4025-a5d3-2432b617c1f8",
+						"exec": [
+							"pm.test(\"get all\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.ok;",
+							"",
+							"    const data = JSON.parse(responseBody);",
+							"",
+							"    const expected = {",
+							"        \"items\": [",
+							"            {",
+							"                \"id\": \"1\",",
+							"                \"name\": \"hoge\"",
+							"            },",
+							"            {",
+							"                \"id\": \"2\",",
+							"                \"name\": \"fuga\"",
+							"            },",
+							"            {",
+							"                \"id\": \"3\",",
+							"                \"name\": \"piyo\"",
+							"            }",
+							"        ]",
+							"    }",
+							"",
+							"    pm.expect(data).to.eql(expected);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0b28a8bd-e8e7-4e2a-8a96-d1e64517a3e5",
+						"exec": [
+							"pm.test(\"get by id\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.ok;",
+							"",
+							"    const data = JSON.parse(responseBody);",
+							"",
+							"    const expected = {",
+							"        \"id\": \"2\",",
+							"        \"name\": \"fuga\"",
+							"    }",
+							"",
+							"    pm.expect(data).to.eql(expected);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/2",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d16b5118-4084-460d-9966-587d385022ff",
+						"exec": [
+							"pm.test(\"post\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"4\",\n    \"name\": \"piyopiyo\"\n}"
+				},
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_all after post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4b3da605-f04e-4b6c-81bf-6cdc4a077e1d",
+						"exec": [
+							"pm.test(\"get all after post\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.ok;",
+							"",
+							"    const data = JSON.parse(responseBody);",
+							"",
+							"    const expected = {",
+							"        \"items\": [",
+							"            {",
+							"                \"id\": \"1\",",
+							"                \"name\": \"hoge\"",
+							"            },",
+							"            {",
+							"                \"id\": \"2\",",
+							"                \"name\": \"fuga\"",
+							"            },",
+							"            {",
+							"                \"id\": \"3\",",
+							"                \"name\": \"piyo\"",
+							"            },",
+							"                    {",
+							"                \"id\": \"4\",",
+							"                \"name\": \"piyopiyo\"",
+							"            }",
+							"        ]",
+							"    }",
+							"",
+							"    pm.expect(data).to.eql(expected);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3d44723c-ced3-4714-a051-3659c9d98639",
+						"exec": [
+							"pm.test(\"put\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"4\",\n    \"name\": \"fugafuga\"\n}"
+				},
+				"url": {
+					"raw": "{{domain}}/api/items/4",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_all after put",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8b428bb0-d53d-42e1-9797-d510d706a56b",
+						"exec": [
+							"pm.test(\"get all after put\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.ok;",
+							"",
+							"    const data = JSON.parse(responseBody);",
+							"",
+							"    const expected = {",
+							"        \"items\": [",
+							"            {",
+							"                \"id\": \"1\",",
+							"                \"name\": \"hoge\"",
+							"            },",
+							"            {",
+							"                \"id\": \"2\",",
+							"                \"name\": \"fuga\"",
+							"            },",
+							"            {",
+							"                \"id\": \"3\",",
+							"                \"name\": \"piyo\"",
+							"            },",
+							"                    {",
+							"                \"id\": \"4\",",
+							"                \"name\": \"fugafuga\"",
+							"            }",
+							"        ]",
+							"    }",
+							"",
+							"    pm.expect(data).to.eql(expected);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0409edfd-708b-405f-b612-c21f29943d5c",
+						"exec": [
+							"pm.test(\"delete\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/4",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_all after delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2de6e635-388d-467b-a229-dd12775f2d09",
+						"exec": [
+							"pm.test(\"get all after delete\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.ok;",
+							"",
+							"    const data = JSON.parse(responseBody);",
+							"",
+							"    const expected = {",
+							"        \"items\": [",
+							"            {",
+							"                \"id\": \"1\",",
+							"                \"name\": \"hoge\"",
+							"            },",
+							"            {",
+							"                \"id\": \"2\",",
+							"                \"name\": \"fuga\"",
+							"            },",
+							"            {",
+							"                \"id\": \"3\",",
+							"                \"name\": \"piyo\"",
+							"            }",
+							"        ]",
+							"    }",
+							"",
+							"    pm.expect(data).to.eql(expected);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post invalid json",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d16b5118-4084-460d-9966-587d385022ff",
+						"exec": [
+							"pm.test(\"post\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"4\",\n    \"name\": \"piyopiyo\",\n}"
+				},
+				"url": {
+					"raw": "{{domain}}/api/items/",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

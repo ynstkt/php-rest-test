@@ -1,0 +1,64 @@
+name: Deploy to ECR on pull request
+
+on:
+  pull_request:
+
+jobs:
+  build_and_test:
+    uses: ./.github/workflows/ci.yml
+
+  deploy_web:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - uses: actions/checkout@v3
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY_WEB: ${{ secrets.AWS_ECR_REPO_NAME_WEB }}
+        IMAGE_TAG: ${{ github.head_ref }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_WEB:$IMAGE_TAG ./web/
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_WEB:$IMAGE_TAG
+
+  deploy_php:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: composer install --no-dev
+      working-directory: php/src
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY_PHP: ${{ secrets.AWS_ECR_REPO_NAME_PHP }}
+        IMAGE_TAG: ${{ github.head_ref }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_PHP:$IMAGE_TAG ./php/
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_PHP:$IMAGE_TAG

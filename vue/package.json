@@ -1,0 +1,28 @@
+{
+  "name": "php-rest-test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "docker": "vite --host 0.0.0.0",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "deploy": "bash deploy-s3.sh"
+  },
+  "dependencies": {
+    "vue": "^3.2.37",
+    "vue-router": "^4.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "18.0.0",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "@vue/test-utils": "^2.0.2",
+    "jsdom": "^20.0.0",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.7",
+    "vitest": "^0.22.1",
+    "vue-tsc": "^0.39.5"
+  }
+}

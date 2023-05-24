@@ -1,0 +1,24 @@
+{
+  "name": "vendor/rest",
+  "autoload": {
+      "psr-4": {
+          "rest\\": "lib/rest"
+      }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "scripts": {
+    "test": [
+        "phpunit"
+    ],
+    "coverage-html": [
+        "@putenv XDEBUG_MODE=coverage",
+        "phpunit --coverage-html coverage-result"
+    ],
+    "coverage-text": [
+        "@putenv XDEBUG_MODE=coverage",
+        "phpunit --coverage-text"
+    ]
+  }
+}

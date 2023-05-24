@@ -1,0 +1,10 @@
+version: '3'
+services:
+  cdk:
+    build: .
+    container_name: 'cdk'
+    working_dir: '/root/'
+    tty: true
+    volumes:
+      - ./:/root
+      - ~/.aws/:/root/.aws/

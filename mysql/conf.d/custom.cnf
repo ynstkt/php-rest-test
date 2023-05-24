@@ -1,0 +1,3 @@
+[mysqld]
+character-set-server=utf8
+default-authentication-plugin = mysql_native_password

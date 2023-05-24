@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php_unit_test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'php/src'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+    - name: Run test suite
+      run: composer test
+    - name: Coverage
+      run: composer coverage-text
+
+  vue_unit_test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'vue'
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'vue/package-lock.json'
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+
+  e2e_test:
+    needs: [php_unit_test, vue_unit_test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'e2e'
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+    - uses: actions/checkout@v3
+
+    - run: docker-compose up -d
+    
+    - name: API test by newman
+      run: docker-compose run --rm newman newman run -e php-rest-test_docker.postman_environment.json php-rest-test.postman_collection.json
+      working-directory: 'postman'
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'e2e/package-lock.json'
+    - run: npm ci
+    - run: npm run test:playwright
+      env:
+        TEST_TARGET_DOMAIN: localhost:5173

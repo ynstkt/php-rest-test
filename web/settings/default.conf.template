@@ -1,0 +1,29 @@
+map $http_origin $cors {
+    default "NG";
+    "http://localhost:3000" "OK";
+    "${ORIGIN}" "OK";
+}
+
+server {
+    listen 80;
+    root   /usr/share/nginx/html;
+
+    server_tokens off;
+
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options nosniff;
+
+    add_header Access-Control-Allow-Origin $http_origin;
+    add_header Access-Control-Allow-Methods "POST, GET, PUT, DELETE, OPTIONS";
+    add_header Access-Control-Allow-Headers "Origin, Content-Type";
+
+    location /api/items/ {
+        rewrite ^/api/items/(\w.*)$ /api/items/?id=$1? break;
+        index          index.php;
+        fastcgi_pass   ${APP_HOST}:9000;
+        fastcgi_index  index.php;
+        include        fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}

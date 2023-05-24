@@ -1,0 +1,104 @@
+name: Update ECS service on merge
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  build_and_test:
+    uses: ./.github/workflows/ci.yml
+
+  deploy_web:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set tag as latest
+      env:
+        ECR_REPOSITORY_WEB: ${{ secrets.AWS_ECR_REPO_NAME_WEB }}
+        IMAGE_TAG: ${{ github.head_ref }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ap-northeast-1
+      run: |
+        MANIFEST=$(
+          aws ecr batch-get-image \
+            --repository-name $ECR_REPOSITORY_WEB \
+            --image-ids imageTag=$IMAGE_TAG \
+            --output json \
+          | jq --raw-output --join-output '.images[0].imageManifest' \
+        )
+        aws ecr put-image \
+          --repository-name $ECR_REPOSITORY_WEB \
+          --image-tag latest \
+          --image-manifest "$MANIFEST"
+
+  deploy_php:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set tag as latest
+      env:
+        ECR_REPOSITORY_PHP: ${{ secrets.AWS_ECR_REPO_NAME_PHP }}
+        IMAGE_TAG: ${{ github.head_ref }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ap-northeast-1
+      run: |
+        MANIFEST=$(
+          aws ecr batch-get-image \
+            --repository-name $ECR_REPOSITORY_PHP \
+            --image-ids imageTag=$IMAGE_TAG \
+            --output json \
+          | jq --raw-output --join-output '.images[0].imageManifest' \
+        )
+        aws ecr put-image \
+          --repository-name $ECR_REPOSITORY_PHP \
+          --image-tag latest \
+          --image-manifest "$MANIFEST"
+
+  update_service:
+    needs: [deploy_web, deploy_php]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Force deployment ECS
+      run: aws ecs update-service --cluster ${{ secrets.AWS_ECS_CLUSTER_NAME }} --service ${{ secrets.AWS_ECS_SERVICE_NAME }} --force-new-deployment
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ap-northeast-1
+
+  deploy_vue:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'vue'
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'vue/package-lock.json'
+
+    - name: Build
+      run: |
+        echo "VITE_API_HOST=${{ secrets.VITE_API_HOST }}" >> .env.production
+        npm ci
+        npm run build
+
+    - name: Deploy to CloudFront
+      run: npm run deploy
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ap-northeast-1
+        AWS_S3_BUCKET_VUE: ${{ secrets.AWS_S3_BUCKET_VUE }}

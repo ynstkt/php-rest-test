@@ -1,0 +1,63 @@
+version: "3"
+ 
+services:
+  newman:
+    build: ./postman/
+    volumes:
+      - ./postman:/usr/src/app
+    depends_on:
+      - web
+  vue:
+    build: ./vue/
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./vue:/usr/src/app
+    command: sh -c "npm install && npm run docker"
+    depends_on:
+      - web
+  web:
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile
+      target: base
+    volumes:
+      - ./web/settings/default.conf.template:/etc/nginx/conf.d/default.conf.template
+    ports:
+      - "8080:80"
+    depends_on:
+      - php
+    environment:
+      APP_HOST: php
+      ORIGIN: http://localhost:5173
+  php:
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+      target: dev
+    volumes:
+      - ./php/settings/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./php/src:/usr/share/nginx/html
+    command: sh -c "composer install && php-fpm"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: foo
+      DB_PASS: foopassword
+      DB_NAME: foodb
+  mysql:
+    build: ./mysql/
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: foo
+      MYSQL_PASSWORD: foopassword
+      MYSQL_DATABASE: foodb
+    volumes:
+      - ./mysql/conf.d/:/etc/mysql/conf.d
+      - ./mysql/initdb/:/docker-entrypoint-initdb.d
+      - ./mysql/data/:/tmp/data
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD

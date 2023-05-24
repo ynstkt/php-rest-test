@@ -1,0 +1,42 @@
+<?php
+use PHPUnit\Framework\TestCase;
+
+use rest\domain\models\AndCheck;
+
+final class AndCheckTest extends TestCase
+{
+    /**
+     * @covers rest\domain\models\AndCheck::check
+     * @dataProvider dataProvider
+     */
+    public function testCheck(bool $bool1, bool $bool2, bool $bool3, bool $bool4, bool $expected): void
+    {
+        $this->assertEquals($expected, AndCheck::check($bool1, $bool2, $bool3, $bool4));
+    }
+
+    public function dataProvider(): array
+    {
+        return [
+            [true, true, true, true, true],
+            [true, true, true, false, true],
+            [true, true, false, true, true],
+            [true, true, false, false, true],
+
+            [true, false, true, true, true],
+            [true, false, true, false, false],
+            [true, false, false, true, false],
+            [true, false, false, false, false],
+
+            [false, true, true, true, true],
+            [false, true, true, false, false],
+            [false, true, false, true, false],
+            [false, true, false, false, false],
+
+            [false, false, true, true, true],
+            [false, false, true, false, false],
+            [false, false, false, true, false],
+            [false, false, false, false, false],
+        ];
+    }
+
+}
